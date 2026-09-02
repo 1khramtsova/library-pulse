@@ -85,10 +85,14 @@ select
   c.funnel_id,
   min(f.day)                             as first_day,
   max(f.day)                             as last_day,
-  sum(f.impressions)                     as impressions,
-  sum(f.views_3s)                        as views_3s,
-  sum(f.link_clicks)                     as link_clicks,
-  sum(f.spend)                           as spend
+  -- sum(bigint) в Postgres возвращает numeric, а wilson_ci/cost_ci объявлены
+  -- на bigint: без явного каста функции не резолвятся. coalesce обязателен —
+  -- left join даёт NULL для экспозиции без фактов, а NULL проваливается через
+  -- все when в v_decision прямо в else и получает вердикт 'scale'.
+  coalesce(sum(f.impressions), 0)::bigint as impressions,
+  coalesce(sum(f.views_3s), 0)::bigint    as views_3s,
+  coalesce(sum(f.link_clicks), 0)::bigint as link_clicks,
+  coalesce(sum(f.spend), 0)              as spend
 from exposure e
 join creative_variant cv on cv.id = e.variant_id
 join ad_set a            on a.id  = e.ad_set_id

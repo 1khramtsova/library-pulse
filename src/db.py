@@ -11,9 +11,11 @@ import argparse
 import os
 import sys
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
 
+import psycopg
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
@@ -111,6 +113,35 @@ def sync_run(job: str) -> Iterator[RowCounter]:
             )
 
 
+def record_run(
+    job: str,
+    started_at: datetime,
+    status: str,
+    rows_written: int = 0,
+    error: str | None = None,
+) -> None:
+    """Пишет в sync_run уже завершённую строку.
+
+    Нужно ровно для миграций: таблицу sync_run создаёт миграция 001, поэтому
+    журналировать собственный bootstrap в реальном времени нечем — строка
+    добавляется задним числом, когда таблица уже появилась.
+    """
+    with connection() as conn:
+        conn.execute(
+            "insert into sync_run (job, started_at, finished_at, status,"
+            " rows_written, error) values (%s, %s, now(), %s, %s, %s)",
+            (job, started_at, status, rows_written, error),
+        )
+
+
+def schema_ready() -> bool:
+    """Применена ли миграция 001 — по наличию sync_run."""
+    with connection() as conn:
+        return conn.execute(
+            "select to_regclass('public.sync_run') is not null as ready"
+        ).fetchone()["ready"]
+
+
 def pending_migrations() -> list[Path]:
     """Файлы migrations/*.sql, которых ещё нет в реестре, в порядке имён."""
     with connection() as conn:
@@ -191,14 +222,32 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.migrate:
-            with sync_run("migrate") as counter:
+            started = datetime.now(timezone.utc)
+            try:
                 applied = migrate()
-                counter.add(len(applied))
+            except Exception as exc:
+                # Если упала уже не первая миграция, журнал существует —
+                # тогда провал надо зафиксировать. Если упала 001, писать некуда.
+                try:
+                    record_run(
+                        "migrate", started, "failed",
+                        error=f"{type(exc).__name__}: {exc}"[:2000],
+                    )
+                except psycopg.errors.UndefinedTable:
+                    pass
+                raise
+            record_run("migrate", started, "ok", rows_written=len(applied))
             if applied:
                 print("Применено: " + ", ".join(applied))
             else:
                 print("Новых миграций нет.")
         if args.check:
+            if not schema_ready():
+                print(
+                    "Схема не создана. Сначала: uv run python -m src.db --migrate",
+                    file=sys.stderr,
+                )
+                return 3
             with sync_run("db_check"):
                 check()
     except RuntimeError as exc:
