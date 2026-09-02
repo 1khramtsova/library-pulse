@@ -27,9 +27,13 @@ Meta отклонит вызовы с серверного токена.
 
 1. [developers.facebook.com](https://developers.facebook.com) → **My Apps** → **Create App**
 2. На экране выбора сценария отметить **только** «Create & manage ads with
-   Marketing API». Остальное — Threads, Instant Games, Facebook Login, app ads,
-   WhatsApp — не отмечать: каждый лишний сценарий тянет лишние права и возможный
-   app review
+   Marketing API». Остальное — Threads, Instant Games, Facebook Login, WhatsApp —
+   не отмечать: каждый лишний сценарий тянет лишние права и возможный app review
+
+   Отдельно про «Create & manage **app** ads with Meta Ads Manager» — его легко
+   принять за нужный. Это кампании на установку мобильного приложения, и в его
+   описании прямо сказано: *does not include access to Marketing API*. Он не
+   добавляет доступ, а даёт другой, более узкий — с ним синк не заработает
 3. На шаге привязки выбрать свой Business Manager. Если приложение не привязано
    к бизнесу, System User не сможет выпустить для него токен
 4. **App Settings → Basic** → поле **App Secret** → **Show** (попросит пароль)
