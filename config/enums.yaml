@@ -1,0 +1,134 @@
+# Creative OS · словари атрибутов
+# Заполняется руками в T0. Нужен уже в A1: до появления vision-разбора
+# запускаемые креативы размечаются вручную в этих же терминах.
+#
+# ПРАВИЛО: новое значение добавляется только через правку этого файла
+# и бамп schema_version. Модель НЕ придумывает значения сама.
+# Иначе через полгода будет 400 уникальных design_language и ноль статистики.
+
+schema_version: "1.0"
+
+# ─── контекст: живёт в ad_set и campaign, НЕ в геноме ───
+
+segment:
+  - medium_seller      # R$100k+/мес, Mercado Líder, команда 2–6
+  - big_seller         # R$500k+/мес
+  - unqualified        # холодная аудитория без квалификации
+  - retargeting
+
+offer_type:
+  - webinar
+  - lead_magnet
+  - trial
+  - demo
+
+funnel_stage:
+  - registered
+  - attended
+  - sql60
+  - demo_booked
+  - deal_won
+
+metric:
+  - hook_rate
+  - ctr
+  - cpl
+  - qual_rate
+  - cpmql
+  - cac
+  - romi
+
+# ─── asset_genome: визуальные признаки, привязаны к файлу ───
+
+media_format:
+  - static
+  - carousel
+  - video_ugc
+  - video_talking_head
+  - video_whiteboard
+  - story
+
+design_language:
+  - editorial          # B2B, плотный текст, сдержанный цвет
+  - dashboard          # интерфейсные скриншоты и карточки
+  - photo_real
+  - poster
+  - bauhaus
+  - memphis
+  - brutalism
+  - op_art
+  - glassmorphism      # тёмный фон + aurora-градиенты
+  - handwritten
+  - screenshot_native  # имитация нативного интерфейса
+
+speaker:
+  - gabriel_bollico
+  - alexandre_nogueira
+  - edson_saldanha
+  - nathan_ritter
+  - joao_sartini
+  - eliseu_gomes
+  - none
+
+color_dominant:
+  - neutral_dark
+  - neutral_light
+  - yellow
+  - orange
+  - green
+  - blue
+  - purple
+  - red
+  - mixed
+
+# text_density: целое 1–5
+#   1 — только заголовок
+#   3 — заголовок + подзаголовок + подпись
+#   5 — плотный текстовый блок
+
+# ─── variant_genome: копирайт и оффер, привязаны к adcreative ───
+
+hook_type:
+  - number_shock          # начинается с конкретной цифры
+  - objection_preempt     # снимает возражение до того, как оно возникло
+  - question
+  - insider_leak          # «то, что делают за кулисами»
+  - status_threat         # риск отстать
+  - ceremony              # официальное обращение, созыв
+  - how_to
+  - testimonial
+  - contrarian            # опровержение общего места
+  - direct_offer
+
+persuasion_mechanism:
+  - authority
+  - social_proof
+  - loss_aversion
+  - curiosity_gap
+  - specificity
+  - identity              # «такие, как ты»
+  - reciprocity
+
+cta_type:
+  - register
+  - download
+  - learn_more
+  - sign_up
+  - whatsapp
+  - book_demo
+
+# qualifier_in_first_line: boolean
+#   Есть ли в первой строке хука упоминание платформы или объёма продаж.
+#   Гипотеза: отсутствие тащит неквалифицированный трафик.
+#   В A1 фиксируется вручную, проверяется по qual_rate.
+
+# ─── комплаенс: проверяется линтером в треке B ───
+
+compliance_flags:
+  - result_promise        # обещание результата в процентах
+  - date_present
+  - forbidden_feature     # Buy Box, central de alertas
+  - internal_tool_name    # JoomAI, MCP
+  - libre_misspelling     # Libre вместо Livre
+  - surname_only          # фамилия спикера без имени
+  - unverified_superlative
